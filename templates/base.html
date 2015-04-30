@@ -1,0 +1,20 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <link rel="stylesheet" href="{% static "bootstrap-3.3.4-dist/css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "bootstrap-3.3.4-dist/css/bootstrap-theme.min.css" %}">
+</head>
+<body>
+<div class="container">
+    {% block body %}
+    {% endblock %}
+</div>
+<script src="{% static "jquery-2.1.3.min.js" %}"></script>
+<script src="{% static "bootstrap-3.3.4-dist/js/bootstrap.min.js" %}"></script>
+</body>
+</html>

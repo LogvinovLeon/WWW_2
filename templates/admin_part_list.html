@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block body %}
+    <h1>{{ object.name }}</h1>
+    <ol class="breadcrumb">
+        {% for step in path %}
+            <li>
+                {% if step.id %}
+                    <a href="{% url step.view_name step.id %}">{{ step.name }}</a>
+                {% else %}
+                    <a href="{% url step.view_name %}">{{ step.name }}</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ol>
+    {% if error %}
+        <h3 class="alert-danger">Someone had modified data</h3>
+    {% endif %}
+    {% if part_view_name %}
+        <ul>
+            {% for part in object_list %}
+                <li>
+                    <a href={% url part_view_name part.id %}>
+                        {{ part.name }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <form action="{% url this_view_name object.id %}" method="POST">
+            {% csrf_token %}
+            {% for part in object_list %}
+                <div class="form-group row">
+                    <label class="col-md-6">{{ part.name }}</label>
+                    <label for="{{ part.id }}_blanks_received" class="col-md-2">Komisja otrzymała kart do
+                        głosowania</label>
+                    <input type="number" class="col-md-1"
+                           id="{{ part.id }}_blanks_received"
+                           value="{{ part.blanks_received }}"
+                           name="{{ part.id }}_blanks_received"
+                           min="0">
+                    <label for="{{ part.id }}_can_vote" class="col-md-2">Komisja otrzymała kart do głosowania</label>
+                    <input type="number" class="col-md-1"
+                           id="{{ part.id }}_can_vote"
+                           value="{{ part.can_vote }}"
+                           name="{{ part.id }}_can_vote"
+                           min="0">
+                </div>
+            {% endfor %}
+            <input type="hidden" name="version" value="{{ object.version }}">
+            <input type="submit" value="Submit" class="btn btn-default">
+        </form>
+    {% endif %}
+{% endblock %}
