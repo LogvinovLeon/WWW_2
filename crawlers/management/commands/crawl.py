@@ -1,10 +1,10 @@
 # coding=utf-8
 import urllib
-from lxml import html
 
+from lxml import html
 from django.core.management import BaseCommand
 
-from crawlers.models import Voivodeship, Powiat, Gmina, Constituency
+from app.models import Voivodeship, Powiat, Gmina, Constituency
 
 
 class Etree(html.HtmlElement):

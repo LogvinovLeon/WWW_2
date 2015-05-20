@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
-from main.views import Voivodeships, Powiats, Gminas, Constituencies
+from app.views import Voivodeships, Powiats, Gminas, Constituencies
 
 
 urlpatterns = patterns('',

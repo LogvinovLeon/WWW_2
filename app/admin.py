@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from crawlers.models import Voivodeship, Powiat, Gmina, Constituency
+from app.models import Voivodeship, Powiat, Gmina, Constituency
 
 
 class ConstituencyAdmin(admin.ModelAdmin):

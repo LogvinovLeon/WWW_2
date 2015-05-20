@@ -13,7 +13,7 @@
         {% endfor %}
     </ol>
     {% if error %}
-        <h3 class="alert-danger">Someone had modified data</h3>
+        <h3 class="alert-danger">{{ error }}</h3>
     {% endif %}
     {% if part_view_name %}
         <ul>

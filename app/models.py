@@ -71,6 +71,11 @@ class Gmina(PolishAdminPart):
     class Meta:
         verbose_name_plural = "Gminas"
 
+    def get_absolute_url(self):
+        from django.core.urlresolvers import reverse
+
+        return reverse('constituencies', args=[str(self.id)])
+
 
 class Constituency(PolishAdminPart):
     gmina = ForeignKey(Gmina)
@@ -79,6 +84,9 @@ class Constituency(PolishAdminPart):
 
     class Meta:
         verbose_name_plural = "Constituencies"
+
+    def __unicode__(self):
+        return u"{} : {} : {}\n".format(super(Constituency, self).__unicode__(), self.blanks_received, self.can_vote)
 
 
 PARTS_ORDER = [Voivodeship, Powiat, Gmina, Constituency]

@@ -1,10 +1,10 @@
-from django.http.response import HttpResponseForbidden
+from collections import defaultdict
 
-from django.shortcuts import get_object_or_404
-
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic.list import ListView
+from bulk_update.helper import bulk_update
 
-from crawlers.models import Voivodeship, Powiat, Gmina, Constituency
+from app.models import Voivodeship, Powiat, Gmina, Constituency
 
 
 class AdminPartListView(ListView):
@@ -49,26 +49,32 @@ class Gminas(AdminPartListView):
 class Constituencies(AdminPartListView):
     model = Constituency
 
+    def _error(self, message):
+        context = self.get_context_data()
+        context["error"] = message
+        return self.render_to_response(context)
+
     def post(self, *args, **kwargs):
         request, gmina_id = args
         gmina = get_object_or_404(Gmina, pk=gmina_id)
-        form_version = int(request.POST.get("version"))
+        post_data = dict(request.POST.iteritems())
+        post_data.pop("csrfmiddlewaretoken", 0)
+        form_version = int(post_data.pop("version", 0))
         if form_version < gmina.version:
-            context = self.get_context_data()
-            context["error"] = "Modified"
-            return self.render_to_response(context)
-        for key, value in request.POST.iteritems():
-            if key == "csrfmiddlewaretoken" or key == "version":
-                continue
+            return self._error("modified")
+        new_values = defaultdict(dict)
+        for key, value in post_data.iteritems():
             id, field = key.split("_", 1)
-            constituency = get_object_or_404(Constituency, pk=id)
-            if field == "blanks_received":
-                constituency.blanks_received = int(value)
-            elif field == "can_vote":
-                constituency.can_vote = int(value)
-            else:
-                return HttpResponseForbidden()
-            constituency.save()
+            if field not in ["can_vote", "blanks_received"]:
+                return self._error("unknown_field")
+            new_values[int(id)].update({field: value})
+        constituencies = []
+        for key, value in new_values.iteritems():
+            constituency = get_object_or_404(Constituency, pk=key)
+            constituency.can_vote = value.pop("can_vote", constituency.can_vote)
+            constituency.blanks_received = value.pop("blanks_received", constituency.blanks_received)
+            constituencies.append(constituency)
+        bulk_update(constituencies, update_fields=["can_vote", "blanks_received"])
         gmina.version += 1
         gmina.save()
-        return self.get(*args, **kwargs)
+        return redirect(gmina, permanent=True)
