@@ -66,7 +66,6 @@ class Powiat(PolishAdminPart):
 
 class Gmina(PolishAdminPart):
     powiat = ForeignKey(Powiat)
-    version = IntegerField(default=1)
 
     class Meta:
         verbose_name_plural = "Gminas"
@@ -81,6 +80,7 @@ class Constituency(PolishAdminPart):
     gmina = ForeignKey(Gmina)
     blanks_received = IntegerField(default=0)
     can_vote = IntegerField(default=0)
+    version = IntegerField(default=1)
 
     class Meta:
         verbose_name_plural = "Constituencies"

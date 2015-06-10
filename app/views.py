@@ -1,6 +1,9 @@
 from collections import defaultdict
 
+from django.http import JsonResponse
+
 from django.shortcuts import get_object_or_404, redirect
+from django.views.generic.base import View
 from django.views.generic.list import ListView
 from bulk_update.helper import bulk_update
 
@@ -78,3 +81,31 @@ class Constituencies(AdminPartListView):
         gmina.version += 1
         gmina.save()
         return redirect(gmina, permanent=True)
+
+
+class ConstituencyView(View):
+    def get(self, request, pk):
+        constituency = get_object_or_404(Constituency, pk=pk)
+        return JsonResponse({"blanks_received": constituency.blanks_received,
+                             "can_vote": constituency.can_vote})
+
+    def post(self, request, pk):
+        constituency = get_object_or_404(Constituency, pk=pk)
+        post_data = dict(self.request.POST.iteritems())
+        post_data.pop("csrfmiddlewaretoken", 0)
+        form_version = int(post_data.pop("version", 0))
+        if form_version < constituency.version:
+            raise ValueError("old version")
+        can_vote = int(post_data.pop("can_vote", 0))
+        if can_vote < 0:
+            raise ValueError("can_vote < 0")
+        blanks_received = int(post_data.pop("blanks_received", 0))
+        if blanks_received < 0:
+            raise ValueError("blanks_received < 0")
+        constituency.can_vote = can_vote
+        constituency.blanks_received = blanks_received
+        constituency.version = constituency.version + 1
+        constituency.save()
+        return JsonResponse({"blanks_received": constituency.blanks_received,
+                             "can_vote": constituency.can_vote})
+

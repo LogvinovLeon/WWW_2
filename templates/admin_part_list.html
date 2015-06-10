@@ -26,28 +26,107 @@
             {% endfor %}
         </ul>
     {% else %}
-        <form action="{% url this_view_name object.id %}" method="POST">
+        {% for part in object_list %}
             {% csrf_token %}
-            {% for part in object_list %}
-                <div class="form-group row">
-                    <label class="col-md-6">{{ part.name }}</label>
-                    <label for="{{ part.id }}_blanks_received" class="col-md-2">Komisja otrzymała kart do
-                        głosowania</label>
-                    <input type="number" class="col-md-1"
+            <div class="row" data-store-id="{{ part.id }}">
+                <label class="col-md-4">{{ part.name }}</label>
+                <label for="{{ part.id }}_blanks_received" class="col-md-2">Komisja otrzymała kart do
+                    głosowania</label>
+
+                <div class="col-md-1">
+                    <input type="number" class="form-control"
                            id="{{ part.id }}_blanks_received"
                            value="{{ part.blanks_received }}"
-                           name="{{ part.id }}_blanks_received"
-                           min="0">
-                    <label for="{{ part.id }}_can_vote" class="col-md-2">Komisja otrzymała kart do głosowania</label>
-                    <input type="number" class="col-md-1"
+                           name="blanks_received"
+                           min="0" disabled>
+                </div>
+                <label for="{{ part.id }}_can_vote" class="col-md-2">Komisja otrzymała kart do głosowania</label>
+
+                <div class="col-md-1">
+                    <input type="number" class="form-control"
                            id="{{ part.id }}_can_vote"
                            value="{{ part.can_vote }}"
-                           name="{{ part.id }}_can_vote"
-                           min="0">
+                           name="can_vote"
+                           min="0" disabled>
                 </div>
-            {% endfor %}
-            <input type="hidden" name="version" value="{{ object.version }}">
-            <input type="submit" value="Submit" class="btn btn-default">
-        </form>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="version" value="{{ part.version }}">
+                <button class="btn btn-info col-md-2" onclick="edit(this)" data-store-id="{{ part.id }}" name="edit">
+                    Edit
+                </button>
+                <button class="btn btn-success col-md-1" onclick="save(this)" style="display: none" name="save"
+                        data-store-id="{{ part.id }}">
+                    Save
+                </button>
+                <button class="btn btn-danger col-md-1" onclick="cancel(this)" style="display: none" name="cancel"
+                        data-store-id="{{ part.id }}">
+                    Cancel
+                </button>
+            </div>
+        {% endfor %}
+        <script>
+            function switchState(div) {
+                if (div.find("input").is(":disabled")) {
+                    div.find("input:visible").prop('disabled', false);
+                    div.find("[name=\"edit\"]").hide();
+                    div.find("[name=\"save\"]").show();
+                    div.find("[name=\"cancel\"]").show();
+                } else {
+                    div.find("input:visible").prop('disabled', true);
+                    div.find("[name=\"edit\"]").show();
+                    div.find("[name=\"save\"]").hide();
+                    div.find("[name=\"cancel\"]").hide();
+                }
+            }
+            function edit(e) {
+                var id = String($(e).attr("data-store-id"));
+                var div = $("div[data-store-id=" + id + "]");
+                $.ajax({
+                    url: "/constituency/" + id,
+                    success: function (data) {
+                        console.log(data);
+                        div.find("input:visible:nth(0)").val(data.blanks_received);
+                        div.find("input:visible:nth(1)").val(data.can_vote);
+                        switchState(div);
+                    }.bind(this)
+                });
+            }
+            function cancel(e) {
+                var id = String($(e).attr("data-store-id"));
+                var div = $("div[data-store-id=" + id + "]");
+                $.ajax({
+                    url: "/constituency/" + id,
+                    success: function (data) {
+                        console.log(data);
+                        div.find("input:visible:nth(0)").val(data.blanks_received);
+                        div.find("input:visible:nth(1)").val(data.can_vote);
+                        switchState(div);
+                    }.bind(this)
+                });
+            }
+            function save(e) {
+                var id = String($(e).attr("data-store-id"));
+                var div = $("div[data-store-id=" + id + "]");
+                var data_ = div.find("input").serializeArray();
+                var data = {};
+                $.map(data_, function (n, i) {
+                    data[n['name']] = n['value'];
+                });
+                $.ajax({
+                    url: "/constituency/" + id,
+                    data: data,
+                    method: "post",
+                    success: function (data) {
+                        console.log(data);
+                        div.find("input:visible:nth(0)").val(data.blanks_received);
+                        div.find("input:visible:nth(1)").val(data.can_vote);
+                        switchState(div);
+                    }.bind(this),
+                    error: function (data) {
+                        alert("Data had modified. Reload page");
+                    }
+                });
+            }
+        </script>
     {% endif %}
 {% endblock %}
