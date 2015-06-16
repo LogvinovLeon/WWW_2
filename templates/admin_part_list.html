@@ -27,7 +27,6 @@
         </ul>
     {% else %}
         {% for part in object_list %}
-            {% csrf_token %}
             <div class="row" data-store-id="{{ part.id }}">
                 <label class="col-md-4">{{ part.name }}</label>
                 <label for="{{ part.id }}_blanks_received" class="col-md-2">Komisja otrzymała kart do
@@ -87,6 +86,7 @@
                         console.log(data);
                         div.find("input:visible:nth(0)").val(data.blanks_received);
                         div.find("input:visible:nth(1)").val(data.can_vote);
+                        div.find("input[name=version]").val(data.version);
                         switchState(div);
                     }.bind(this)
                 });
@@ -100,6 +100,7 @@
                         console.log(data);
                         div.find("input:visible:nth(0)").val(data.blanks_received);
                         div.find("input:visible:nth(1)").val(data.can_vote);
+                        div.find("input[name=version]").val(data.version);
                         switchState(div);
                     }.bind(this)
                 });
@@ -108,10 +109,12 @@
                 var id = String($(e).attr("data-store-id"));
                 var div = $("div[data-store-id=" + id + "]");
                 var data_ = div.find("input").serializeArray();
+                console.log(data_);
                 var data = {};
                 $.map(data_, function (n, i) {
                     data[n['name']] = n['value'];
                 });
+                console.log(data);
                 $.ajax({
                     url: "/constituency/" + id,
                     data: data,
@@ -120,6 +123,7 @@
                         console.log(data);
                         div.find("input:visible:nth(0)").val(data.blanks_received);
                         div.find("input:visible:nth(1)").val(data.can_vote);
+                        div.find("input[name=version]").val(data.version);
                         switchState(div);
                     }.bind(this),
                     error: function (data) {

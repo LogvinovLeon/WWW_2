@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 from django.http import JsonResponse
-
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic.base import View
 from django.views.generic.list import ListView
@@ -87,7 +86,8 @@ class ConstituencyView(View):
     def get(self, request, pk):
         constituency = get_object_or_404(Constituency, pk=pk)
         return JsonResponse({"blanks_received": constituency.blanks_received,
-                             "can_vote": constituency.can_vote})
+                             "can_vote": constituency.can_vote,
+                             "version": constituency.version})
 
     def post(self, request, pk):
         constituency = get_object_or_404(Constituency, pk=pk)
@@ -107,5 +107,6 @@ class ConstituencyView(View):
         constituency.version = constituency.version + 1
         constituency.save()
         return JsonResponse({"blanks_received": constituency.blanks_received,
-                             "can_vote": constituency.can_vote})
+                             "can_vote": constituency.can_vote,
+                             "version": constituency.version})
 
